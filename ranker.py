@@ -1,6 +1,23 @@
 import requests
 from typing import Dict, List
 from bs4 import BeautifulSoup
+from dataclasses import dataclass
+from datetime import datetime as dt
+
+
+@dataclass()
+class Entry(object):
+
+    title: str
+    url: str
+
+
+@dataclass()
+class Result(object):
+
+    kw: str
+    at: dt
+    entry: List[Entry]
 
 
 class Ranker(object):
@@ -13,10 +30,11 @@ class Ranker(object):
             'https': 'socks5://127.0.0.1:9050',
         }
 
-    def get(self, *, kw: str, count: int = 10, tor: bool = False) -> str:
+    def get(self, *, kw: str, count: int = 10, tor: bool = False) -> Result:
 
-        result: str = ''
+        result: Result = Result(kw='', at=dt.now(), entry=[])
         if kw:
+            result.kw = kw
             option: Dict[str, any] = {
                 'hl': 'ja',
                 'num': count,
@@ -26,18 +44,22 @@ class Ranker(object):
             url = self.urlBase + '?' + '&'.join(['%s=%s' % (k, v) for k, v in option.items()])
 
             content = requests.get(url=url, proxies=self.proxies if tor else {})
-            result = content.text
+            text = content.text
 
-            bs = BeautifulSoup(result, 'html.parser')
-            articles = bs.find_all("div", "ZINbbc xpd O9g5cc uUPGi")
-            for index, item in enumerate(articles, 1):
+            bs = BeautifulSoup(text, 'html.parser')
+            entry = bs.find_all("div", "ZINbbc xpd O9g5cc uUPGi")
+            for item in entry:
                 title = item.find("div", "BNeawe vvjwJb AP7Wnd")
-                print('index[%d] = [%s]' % (index, title))
+                if title:
+                    url = (item.a.get("href").replace('/url?q=', '').split('&'))[0]
+                    result.entry.append(Entry(title=title.string, url=url))
 
         return result
 
 
 if __name__ == '__main__':
-    ranker = Ranker()
-    text = ranker.get(kw='阿弖流為')
-    print(text)
+
+    collector = Ranker()
+    ranking = collector.get(kw='阿弖流為', tor=False)
+
+    print(ranking)
