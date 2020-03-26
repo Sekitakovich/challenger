@@ -20,7 +20,11 @@ def search_index(keyword):
     result = []
     try:
         search_url = 'https://www.google.co.jp/search?hl=ja&num=' + str(max_count) + '&q=' + keyword
-        res_google = requests.get(search_url)
+        proxies = {
+            'http': 'socks5://127.0.0.1:9050',
+            'https': 'socks5://127.0.0.1:9050',
+        }
+        res_google = requests.get(search_url, proxies=proxies)
         bs4_google = BeautifulSoup(res_google.text, 'html.parser')
         articles = bs4_google.find_all("div", "ZINbbc xpd O9g5cc uUPGi")
         i = 0
@@ -61,6 +65,7 @@ for row in reader:
         series = pd.Series(data, index=df.columns)
         df = df.append(series, ignore_index=True)
     time.sleep(15)
+
 from google.colab import files
 
 print('キーワードのファイルを出力')

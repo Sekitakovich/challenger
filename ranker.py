@@ -7,14 +7,13 @@ from datetime import datetime as dt
 
 @dataclass()
 class Entry(object):
-
     title: str
     url: str
 
 
 @dataclass()
 class Result(object):
-
+    status: int
     kw: str
     at: dt
     entry: List[Entry]
@@ -30,9 +29,14 @@ class Ranker(object):
             'https': 'socks5://127.0.0.1:9050',
         }
 
+    def checkTor(self):
+
+        res = requests.get('https://ipinfo.io', proxies=self.proxies).json()
+        print(res)
+
     def get(self, *, kw: str, count: int = 10, tor: bool = False) -> Result:
 
-        result: Result = Result(kw='', at=dt.now(), entry=[])
+        result: Result = Result(kw='', at=dt.now(), entry=[], status=0)
         if kw:
             result.kw = kw
             option: Dict[str, any] = {
@@ -45,6 +49,7 @@ class Ranker(object):
 
             content = requests.get(url=url, proxies=self.proxies if tor else {})
             text = content.text
+            result.status = content.status_code
 
             bs = BeautifulSoup(text, 'html.parser')
             entry = bs.find_all("div", "ZINbbc xpd O9g5cc uUPGi")
@@ -58,8 +63,13 @@ class Ranker(object):
 
 
 if __name__ == '__main__':
+    french: List[str] = ['Debussy', 'Ravel', 'Poulenc', 'Honegger', 'Satie', 'Chabrier', 'Delibes',
+                         'Faure', 'Pierne', 'Offenbach']
+    other: List[str] = ['shostakovich', ]
 
     collector = Ranker()
-    ranking = collector.get(kw='阿弖流為', tor=False)
+    collector.checkTor()
 
-    print(ranking)
+    for name in french:
+        ranking = collector.get(kw=name, tor=True)
+        print(ranking)
