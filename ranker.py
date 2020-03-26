@@ -72,6 +72,10 @@ class Ranker(object):
                         if title:
                             url = (item.a.get("href").replace('/url?q=', '').split('&'))[0]
                             result.entry.append(Entry(title=title.string, url=url))
+                else:
+                    pass
+                    # with open('text.html', 'rt',encoding='utf-8') as f:
+                    #     f.write(content.text)
 
         return result
 
