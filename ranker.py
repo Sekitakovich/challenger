@@ -29,10 +29,19 @@ class Ranker(object):
             'https': 'socks5://127.0.0.1:9050',
         }
 
-    def checkTor(self):
+    def checkTor(self) -> bool:
 
-        res = requests.get('https://ipinfo.io', proxies=self.proxies).json()
-        print(res)
+        success: bool = False
+
+        try:
+            res = requests.get('https://ipinfo.io', proxies=self.proxies).json()
+        except Exception as e:
+            print(e)
+        else:
+            success = True
+            print(res)
+
+        return success
 
     def get(self, *, kw: str, count: int = 10, tor: bool = False) -> Result:
 
@@ -47,38 +56,49 @@ class Ranker(object):
 
             url = self.urlBase + '?' + '&'.join(['%s=%s' % (k, v) for k, v in option.items()])
 
-            content = requests.get(url=url, proxies=self.proxies if tor else {})
-            status = content.status_code
-            result.status = status
-            if status == 200:
-                text = content.text
-                bs = BeautifulSoup(text, 'html.parser')
-                entry = bs.find_all("div", "ZINbbc xpd O9g5cc uUPGi")
-                for item in entry:
-                    title = item.find("div", "BNeawe vvjwJb AP7Wnd")
-                    if title:
-                        url = (item.a.get("href").replace('/url?q=', '').split('&'))[0]
-                        result.entry.append(Entry(title=title.string, url=url))
+            try:
+                content = requests.get(url=url, proxies=self.proxies if tor else {})
+            except Exception as e:
+                print(e)
+            else:
+                status = content.status_code
+                result.status = status
+                if status == 200:
+                    text = content.text
+                    bs = BeautifulSoup(text, 'html.parser')
+                    entry = bs.find_all("div", "ZINbbc xpd O9g5cc uUPGi")
+                    for item in entry:
+                        title = item.find("div", "BNeawe vvjwJb AP7Wnd")
+                        if title:
+                            url = (item.a.get("href").replace('/url?q=', '').split('&'))[0]
+                            result.entry.append(Entry(title=title.string, url=url))
 
         return result
 
 
 if __name__ == '__main__':
+
+    useTor: bool = True
+    online: bool = True
+
     french: List[str] = ['Debussy', 'Ravel', 'Poulenc', 'Honegger', 'Satie', 'Chabrier', 'Delibes',
                          'Faure', 'Pierne', 'Offenbach']
     other: List[str] = ['shostakovich', ]
 
     collector = Ranker()
-    collector.checkTor()
 
-    for name in french:
-        try:
-            ranking = collector.get(kw=name, tor=True)
-        except KeyboardInterrupt as e:
-            break
-        else:
-            if ranking.status == 200:
-                print(ranking)
-            else:
-                print('Fault at status %d' % (ranking.status,))
+    if useTor:
+        online = collector.checkTor()
+
+    if online:
+        for name in french:
+            try:
+                ranking = collector.get(kw=name, tor=useTor)
+            except KeyboardInterrupt as e:
                 break
+            else:
+                if ranking.status == 200:
+                    print(ranking)
+                else:
+                    print('Fault at status %d' % (ranking.status,))
+                    break
