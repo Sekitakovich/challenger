@@ -71,5 +71,9 @@ if __name__ == '__main__':
     collector.checkTor()
 
     for name in french:
-        ranking = collector.get(kw=name, tor=True)
-        print(ranking)
+        try:
+            ranking = collector.get(kw=name, tor=True)
+        except KeyboardInterrupt as e:
+            break
+        else:
+            print(ranking)
