@@ -13,6 +13,8 @@ class Entry(object):
     url: str
 
 
+# why???
+
 @dataclass()
 class Result(object):
     status: int
