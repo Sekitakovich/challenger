@@ -12,7 +12,6 @@ class NMEA(object):
     suffix: str = ''
     item: List[str] = ''
 
-
 # class NMEAFuncs(object):
 #
 #     def __init__(self):
