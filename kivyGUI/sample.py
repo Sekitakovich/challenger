@@ -9,22 +9,15 @@ from threading import Thread
 from typing import Dict
 from loguru import logger
 
+from kivyGUI.whiteboard import WhiteBoard
+
 
 class SampleAPP(App):  # associated with sample.kv
 
     def __init__(self):
         super().__init__()
-        self.active: bool = True
-        self.counter: int = 0
-
-        self.loop: Thread = Thread(target=self.cycle, name='loop', daemon=True)
-        self.loop.start()
-
-    def cycle(self):
-        while self.active:
-            logger.debug(self.counter)
-            self.counter += 1
-            time.sleep(1)
+        # self.active: bool = True
+        # self.counter: int = 0
 
     def on_start(self):
         logger.debug("App Start!!")
@@ -40,16 +33,26 @@ class Main(object):
 
         self.debug: bool = True
 
-        self.guiStage = SampleAPP()
         self.kivyThread = Thread(target=self.kivyStart, daemon=True)
         self.kivyThread.start()
+
+        self.loop: Thread = Thread(target=self.cycle, name='loop', daemon=True)
+        self.loop.start()
 
         self.clients: Dict[str, any] = {}
         self.api = responder.API(debug=True)
         self.api.add_route('/ws', self.wsserver, websocket=True)
         self.api.run(address='0.0.0.0', port=80)
 
+    def cycle(self):
+        while True:
+            logger.debug(WhiteBoard.counter)
+            WhiteBoard.counter += 1
+            time.sleep(1)
+
     def kivyStart(self):
+        self.guiStage = SampleAPP()
+        self.guiStage.title = 'sekitakovich'  # OK!
         self.guiStage.run()
 
     async def wsserver(self, ws: WebSocket):
@@ -68,14 +71,14 @@ class Main(object):
                 del self.clients[key]
                 await ws.close()
                 if self.debug:
-                    logger.debug(e, '%s was gone' % key)
+                    logger.debug('%s was gone' % key)
                 break
             else:
                 for k, v in self.clients.items():
                     if k != key:
                         await v.send_text(msg)
                 if self.debug:
-                    logger.debug('[%s] from %s' % (msg, key))
+                    logger.debug('Posted [%s] from %s' % (msg, key))
 
 
 if __name__ == "__main__":
