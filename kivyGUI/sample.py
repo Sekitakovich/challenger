@@ -1,9 +1,15 @@
 from kivy.app import App
+from kivy.uix.widget import Widget
+from kivy.config import Config
+
+Config.set('graphics', 'width', '640')
+Config.set('graphics', 'height', '480')
 
 import responder
 from starlette.websockets import WebSocket
 from starlette.websockets import WebSocketDisconnect  # 毎回これを忘れて探す
 
+import sys
 import time
 from threading import Thread
 from typing import Dict
@@ -12,12 +18,21 @@ from loguru import logger
 from kivyGUI.whiteboard import WhiteBoard
 
 
+class TextWidget(Widget):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def buttonRelease(self):
+        logger.debug('release')
+
+    def buttonClick(self):
+        logger.debug('click')
+
 class SampleAPP(App):  # associated with sample.kv
 
     def __init__(self):
         super().__init__()
-        # self.active: bool = True
-        # self.counter: int = 0
 
     def on_start(self):
         logger.debug("App Start!!")
@@ -82,5 +97,6 @@ class Main(object):
 
 
 if __name__ == "__main__":
+
     main = Main()
     # KivyGUI().run()

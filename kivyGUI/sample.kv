@@ -1,8 +1,18 @@
-BoxLayout:
-    orientation: "vertical"
-    Button:
-        text: 'seki'
-    Button:
-        text: 'tako'
-    Button:
-        text: 'vich'
+TextWidget:
+
+<TextWidget>
+    BoxLayout:
+        orientation: "vertical"
+        Button:
+            id: sono1
+            text: 'seki'
+            color: 1,0,1,1
+            background_color: 0,1,1,1
+            on_press: root.buttonClick()
+            on_release: root.buttonRelease()
+        Button:
+            id: sono2
+            text: '日本'
+        Button:
+            id: sono3
+            text: 'vich'
