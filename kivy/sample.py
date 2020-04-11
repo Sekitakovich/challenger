@@ -1,5 +1,4 @@
 from kivy.app import App
-# from kivy.uix.boxlayout import BoxLayout
 
 import responder
 from starlette.websockets import WebSocket
@@ -11,7 +10,7 @@ from typing import Dict
 from loguru import logger
 
 
-class SampleAPP(App):
+class SampleAPP(App):  # associated with sample.kv
 
     def __init__(self):
         super().__init__()
@@ -41,7 +40,7 @@ class Main(object):
 
         self.debug: bool = True
 
-        self.gui = SampleAPP()
+        self.guiStage = SampleAPP()
         self.kivyThread = Thread(target=self.kivyStart, daemon=True)
         self.kivyThread.start()
 
@@ -51,7 +50,7 @@ class Main(object):
         self.api.run(address='0.0.0.0', port=80)
 
     def kivyStart(self):
-        self.gui.run()
+        self.guiStage.run()
 
     async def wsserver(self, ws: WebSocket):
 
