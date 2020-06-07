@@ -16,8 +16,12 @@ class Child(Thread):
     def loopKeeper(self):
         logger.debug('%s: start waiting' % self.name)
         self.quitEvent.wait()
-        self.loop = False
         logger.debug('%s: catch!' % self.name)
+        try:
+            raise KeyboardInterrupt
+        except KeyboardInterrupt as e:
+            pass
+        self.loop = False
 
     def run(self) -> None:
         try:
