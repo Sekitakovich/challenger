@@ -14,34 +14,41 @@ class Child(Thread):
         Thread(target=self.loopKeeper, daemon=True).start()
 
     def loopKeeper(self):
-        logger.debug('start waiting')
+        logger.debug('%s: start waiting' % self.name)
         self.quitEvent.wait()
         self.loop = False
-        logger.debug('catch!')
+        logger.debug('%s: catch!' % self.name)
 
     def run(self) -> None:
         try:
             while self.loop:
-                logger.info('+++ %d' % self.counter)
+                logger.debug('%s: +++ %d' % (self.name, self.counter))
                 time.sleep(1)
                 self.counter += 1
         except KeyboardInterrupt as e:
             logger.error(e)
             self.loop = False
 
-        logger.debug('completed')
+        logger.debug('%s: in cleanup' % self.name)
+        time.sleep(2)
+        logger.debug('%s: completed' % self.name)
 
 
 if __name__ == '__main__':
-
     qe = Event()
 
     c = Child(quit=qe)
     c.start()
+
+    time.sleep(1)
+
+    d = Child(quit=qe)
+    d.start()
 
     time.sleep(3)
     logger.info('set quit event')
     qe.set()
     logger.info('waiting join')
     c.join()
+    d.join()
     logger.info('Fin')
