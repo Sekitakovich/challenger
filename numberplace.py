@@ -5,21 +5,22 @@ class NumberPlace(object):
 
     def __init__(self):
         self.core = np.array([n + 1 for n in range(9)], dtype='uint8')
+        self.nbox = np.zeros([9, 9], dtype='uint8')
 
-    def create(self):
-        nbox = np.zeros([9, 9], dtype='uint8')
-        print(nbox)
+    def create(self) -> np.ndarray:
+        # nbox = np.zeros([9, 9], dtype='uint8')
 
         for x in range(0, 9, 3):
             for y in range(0, 9, 3):
                 cell = np.random.permutation(self.core).reshape([3, 3])
-                print('X:Y = %d:%d' % (x, y))
-                print(cell)
+                # print('X:Y = %d:%d' % (x, y))
 
-                nbox[y:y+3, x:x+3] = cell  # Never forget!
-                print(nbox)
+                self.nbox[y:y+3, x:x+3] = cell  # Never forget!
+
+        return self.nbox
 
 if __name__ == '__main__':
 
     sd = NumberPlace()
-    sd.create()
+    ooo = sd.create()
+    print(ooo)
