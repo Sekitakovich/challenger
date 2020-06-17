@@ -1,4 +1,5 @@
 import numpy as np
+from loguru import logger
 
 
 class NumberPlace(object):  # numpy again
@@ -6,11 +7,12 @@ class NumberPlace(object):  # numpy again
         self.core = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='uint8')
 
     def isUnique(self, *, nbox: np.ndarray) -> bool:
-        print(nbox)
+        # print(nbox)
         ok: bool = True
-        for v in nbox:
+        for index, v in enumerate(nbox):
             s = np.unique(v).size
             if s < 9:
+                logger.debug('Break at %d' % index)
                 ok = False
                 break
         return ok
