@@ -33,13 +33,17 @@ if __name__ == '__main__':
     # ppp = ooo.sample()
     # print(ppp)
 
-    stage = np.zeros([9, 9], dtype='uint32')
-    print(stage)
-
     core = np.array([n for n in range(1, 10)], dtype='uint32')
     print(core)
+
+    trio = np.zeros([3, 9], dtype='uint32')
+    print(trio)
+
+    full = np.zeros([9, 9], dtype='uint32')
+    print(full)
+
     cell = np.random.permutation(core).reshape([3, 3])
     print(cell)
 
-    stage[1:4, 4:7] = cell
-    print(stage)
+    full[1:4, 4:7] = cell
+    print(full)
