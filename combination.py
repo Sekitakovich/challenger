@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class NumberPlace(object):
+class NumberPlace(object):  # numpy again
     def __init__(self):
         self.core = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9], dtype='uint8')
 
