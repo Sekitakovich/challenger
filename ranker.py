@@ -74,7 +74,7 @@ class Ranker(object):
                     for item in entry:
                         title = item.find("div", "BNeawe vvjwJb AP7Wnd")
                         if title:
-                            url = (item.a.get("href").replace('/url?q=', '').split('&'))[0]
+                            url = (item.n.get("href").replace('/url?q=', '').split('&'))[0]
                             result.entry.append(Entry(title=title.string, url=url))
                 else:
                     pass
