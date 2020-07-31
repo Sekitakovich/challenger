@@ -4,7 +4,7 @@ from contextlib import closing
 import time
 import math
 import socket
-from threading import Thread
+from threading import Thread, Event
 from functools import reduce
 from operator import xor
 from loguru import logger
@@ -12,13 +12,12 @@ from hexdump import hexdump
 import argparse
 
 
-class GPSSendor(Thread):
+class GPS450(object):
 
-    def __init__(self, *, sog: float, cog: float, mg: str, mp: int):
-        super().__init__()
-        self.daemon = True
+    def __init__(self, *, sog: float, cog: float, mg: str, mp: int, interval: int, sfi: str):
 
-        self.interval: float = 1.0
+        self.running: bool = True
+
         self.latMeterPerSec: float = 30.820
         self.lngMeterPerSec: float = 25.153
 
@@ -32,6 +31,8 @@ class GPSSendor(Thread):
         self.lng: float = self.toplng
         self.sog = sog
         self.cog = cog
+        self.interval = interval
+        self.sfi = sfi.encode()
 
         rmc = 'GPRMC,085120.307,A,3541.1493,N,13945.3994,E,000.0,240.3,181211,,,A'
         self.rmc: List[str] = rmc.split(',')
@@ -42,10 +43,15 @@ class GPSSendor(Thread):
         zda = 'GPZDA,082220.00,09,01,2006,0,0'
         self.zda: List[str] = zda.split(',')
 
-        self.sfi = b'GP0001'
         self.counter = 1
+        self.timerEvent = Event()
+        self.te = Thread(target=self.intervalTimer, daemon=True)
+        self.te.start()
 
-        self.running: bool = True
+    def intervalTimer(self):
+        while self.running:
+            self.timerEvent.set()
+            time.sleep(self.interval)
 
     def F450(self, *, nmea: bytes) -> bytes:
         header = b'UdPdC\x00'
@@ -71,110 +77,113 @@ class GPSSendor(Thread):
 
         return reduce(xor, body, 0)
 
+    def docking(self, *, body: str) -> bytes:
+        cs: str = '*%02X' % self.checkSum(body=body.encode())
+        nmea: str = '$' + body + cs
+        sentence = (nmea + '\r\n').encode()
+        return sentence
+
     def ZDA(self, *, now: dt) -> bytes:
-        self.zda[1] = now.strftime('%H%M%S.%f')
+        self.zda[1] = now.strftime('%H%M%S.%f')[:-3]
         self.zda[2] = str(now.day)
         self.zda[3] = str(now.month)
         self.zda[4] = str(now.year)
 
-        body: str = ','.join(self.zda)
-        cs: str = '*%02X' % self.checkSum(body=body.encode())
-        nmea: str = '$%s%s' % (body, cs)
-        sentence = (nmea + '\r\n').encode()
-        return sentence
+        return self.docking(body=','.join(self.zda))
 
     def GLL(self, *, now: dt) -> bytes:
         self.gll[1] = '%.4f' % self.GoogleMaptoGPS(val=self.lat)
         self.gll[3] = '%.4f' % self.GoogleMaptoGPS(val=self.lng)
-        self.gll[5] = now.strftime('%H%M%S.%f')
+        self.gll[5] = now.strftime('%H%M%S.%f')[:-3]
 
-        body: str = ','.join(self.gll)
-        cs: str = '*%02X' % self.checkSum(body=body.encode())
-        nmea: str = '$%s%s' % (body, cs)
-        sentence = (nmea + '\r\n').encode()
-        return sentence
+        return self.docking(body=','.join(self.gll))
 
     def GGA(self, *, now: dt) -> bytes:
-        self.gga[1] = now.strftime('%H%M%S.%f')
+        self.gga[1] = now.strftime('%H%M%S.%f')[:-3]
         self.gga[2] = '%.4f' % self.GoogleMaptoGPS(val=self.lat)
         self.gga[4] = '%.4f' % self.GoogleMaptoGPS(val=self.lng)
 
-        body: str = ','.join(self.gga)
-        cs: str = '*%02X' % self.checkSum(body=body.encode())
-        nmea: str = '$%s%s' % (body, cs)
-        sentence = (nmea + '\r\n').encode()
-        return sentence
+        return self.docking(body=','.join(self.gga))
 
     def RMC(self, *, now: dt) -> bytes:
-        self.rmc[1] = now.strftime('%H%M%S.%f')
+        self.rmc[1] = now.strftime('%H%M%S.%f')[:-3]
         self.rmc[3] = '%.4f' % self.GoogleMaptoGPS(val=self.lat)
         self.rmc[5] = '%.4f' % self.GoogleMaptoGPS(val=self.lng)
         self.rmc[7] = '%.1f' % self.sog
         self.rmc[8] = '%.1f' % self.cog
         self.rmc[9] = now.strftime('%y%m%d')
 
-        body: str = ','.join(self.rmc)
-        cs: str = '*%02X' % self.checkSum(body=body.encode())
-        # nmea: str = '$%s%s' % (body, cs)
-        nmea: str = body + cs
-        sentence = (nmea + '\r\n').encode()
-        return sentence
+        return self.docking(body=','.join(self.rmc))
 
-    def run(self) -> None:
+    def start(self) -> None:
 
-        logger.debug('Start mg=%s mp=%d speed=%f, heading=%f' % (self.group,self.port,self.sog,self.cog))
-        with closing(socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)) as sock:
-            sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1)
+        try:
+            logger.debug('Start mg=%s mp=%d speed=%f, heading=%f interval %d(secs)' % (
+            self.group, self.port, self.sog, self.cog, self.interval))
+            with closing(socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)) as sock:
+                sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 1)
 
-            while self.running:
+                while self.running:
 
-                distance: float = ((self.sog * 1000 * 1.852) / 3600) * self.interval
-                theta: float = math.radians((self.cog * -1) + 90)
+                    if self.timerEvent.wait():
+                        self.timerEvent.clear()
 
-                latS: float = (distance * math.sin(theta)) / self.latMeterPerSec
-                self.lat = ((self.lat * 3600) + latS) / 3600
+                        distance: float = ((self.sog * 1000 * 1.852) / 3600) * self.interval
+                        theta: float = math.radians((self.cog * -1) + 90)
 
-                lngS: float = (distance * math.cos(theta)) / self.lngMeterPerSec
-                self.lng = ((self.lng * 3600) + lngS) / 3600
+                        latS: float = (distance * math.sin(theta)) / self.latMeterPerSec
+                        self.lat = ((self.lat * 3600) + latS) / 3600
 
-                now = dt.utcnow()
+                        lngS: float = (distance * math.cos(theta)) / self.lngMeterPerSec
+                        self.lng = ((self.lng * 3600) + lngS) / 3600
 
-                for sentence in [self.RMC(now=now), self.GGA(now=now), self.ZDA(now=now), self.GLL(now=now)]:
-                    f = self.F450(nmea=sentence)
-                    print(f)
-                    try:
-                        sock.sendto(f, (self.group, self.port))
-                    except KeyboardInterrupt as e:
-                        break
-                    except socket.error as e:
-                        print(e)
+                        logger.info('+++ sendto %s' % self.group)
+                        now = dt.utcnow()
+
+                        for sentence in [self.RMC(now=now), self.GGA(now=now), self.ZDA(now=now), self.GLL(now=now)]:
+                            f = self.F450(nmea=sentence)
+                            sock.sendto(f, (self.group, self.port))
+                            print(f)
+
                     else:
-                        pass
-
-                time.sleep(1)
+                        break
+        except (KeyboardInterrupt,) as e:
+            self.running = False
+        except (socket.error, socket.gaierror) as e:
+            logger.error(e)
+            self.running = False
+        else:
+            pass
 
 
 if __name__ == '__main__':
+    version = '2.03'
 
     sog = 30
     cog = 45
     mg = '239.192.0.1'
     mp = 56001
+    interval = 1
+    sfi = 'GP0001'
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--speed', type=int, default=sog, help='速度(初期値: %d)' % sog)
     parser.add_argument('--heading', type=int, default=cog, help='方角(初期値: %d)' % cog)
+    parser.add_argument('--interval', type=int, default=interval, help='出力間隔(初期値: %d)' % interval)
     parser.add_argument('--group', type=str, default=mg, help='マルチキャストグループ(初期値: %s)' % mg)
     parser.add_argument('--port', type=int, default=mp, help='マルチキャストポート(初期値: %d)' % mp)
+    parser.add_argument('--sfi', type=str, default=sfi, help='SFI(初期値: %s)' % sfi)
+    parser.add_argument('--version', action='version', version=version)
 
     args = parser.parse_args()
 
-    g = GPSSendor(sog=args.speed, cog=args.heading, mg=args.group, mp=args.port)
+    g = GPS450(sog=args.speed, cog=args.heading, mg=args.group, mp=args.port, interval=args.interval, sfi=args.sfi)
     g.start()
 
-    while True:
-        try:
-            time.sleep(60)
-        except (KeyboardInterrupt, ) as e:
-            logger.error(e)
-            g.running = False
-            break
+    # while True:
+    #     try:
+    #         time.sleep(60)
+    #     except (KeyboardInterrupt, ) as e:
+    #         logger.error(e)
+    #         g.running = False
+    #         break
