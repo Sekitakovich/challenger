@@ -180,10 +180,3 @@ if __name__ == '__main__':
     g = GPS450(sog=args.speed, cog=args.heading, mg=args.group, mp=args.port, interval=args.interval, sfi=args.sfi)
     g.start()
 
-    # while True:
-    #     try:
-    #         time.sleep(60)
-    #     except (KeyboardInterrupt, ) as e:
-    #         logger.error(e)
-    #         g.running = False
-    #         break
