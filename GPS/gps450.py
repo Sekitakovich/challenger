@@ -54,7 +54,7 @@ class GPS450(object):
             time.sleep(self.interval)
 
     def F450(self, *, nmea: bytes) -> bytes:
-        header = b'UdPdC\x00'
+        header = b'UdPbC\x00'
         section: List[bytes] = []
         section.append(b's:' + self.sfi)
         section.append(b'n:%d' % self.counter)
