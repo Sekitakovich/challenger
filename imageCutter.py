@@ -22,6 +22,18 @@ class ImageCutter(object):
             if W <= self.W and H <= self.H:
                 logger.debug('Skip this')
                 result = image
+            elif W < self.W:
+                logger.debug('setting W')
+                result = image.crop((0,
+                                     (H - self.H) // 2,
+                                     W,
+                                     (H + self.H) // 2))
+            elif H < self.H:
+                logger.debug('setting H')
+                result = image.crop(((W - self.W) // 2,
+                                     0,
+                                     (W + self.W) // 2,
+                                     H))
             else:
                 result = image.crop(((W - self.W) // 2,
                                      (H - self.H) // 2,
@@ -35,4 +47,4 @@ class ImageCutter(object):
 
 
 if __name__ == '__main__':
-    ImageCutter().crop(src='./imgs/large.jpg')
+    ImageCutter().crop(src='./imgs/o6.jpg')
