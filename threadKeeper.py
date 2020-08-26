@@ -6,7 +6,7 @@ from loguru import logger
 class Child(Thread):
     def __init__(self, *, quit: Event):
         super().__init__()
-        self.daemon = True
+        self.daemon = False
         self.counter: int = 0
         self.quitEvent = quit
         self.loop: bool = True

@@ -28,6 +28,7 @@ class Main(object):
         self.sub: Dict[str, Sub] = {
             'sono1': Sub(name='sono1', event=self.event),
             'sono2': Sub(name='sono2', event=self.event),
+            'sono3': Sub(name='sono3', event=self.event),
         }
         for k, v in self.sub.items():
             v.start()
