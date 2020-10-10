@@ -33,4 +33,4 @@ class ImageCutter(object):
 
 
 if __name__ == '__main__':
-    ImageCutter().crop(src='./imgs/kanagawa.png')
+    ImageCutter().crop(src='../imgs/kanagawa.png')
