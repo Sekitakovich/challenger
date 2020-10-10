@@ -6,9 +6,9 @@ from loguru import logger
 
 class ImageCutter(object):
 
-    def __init__(self, *, dst: str = 'sample.png'):
-        self.W = 1280
-        self.H = 1024
+    def __init__(self, *, dst: str = 'sample.png', dw: int = 1280, dh: int = 1024):
+        self.W = dw
+        self.H = dh
         self.dst = pathlib.Path(dst)
         if self.dst.exists() is False:
             logger.warning('%s is not exists' % self.dst)
@@ -19,26 +19,12 @@ class ImageCutter(object):
             image = Image.open(src)
             W, H = image.size
             logger.info('Processing %s (W:H = %d:%d)' % (src, W, H))
-            if W <= self.W and H <= self.H:
-                logger.debug('Skip this')
-                result = image
-            elif W < self.W:
-                logger.debug('setting W')
-                result = image.crop((0,
-                                     (H - self.H) // 2,
-                                     W,
-                                     (H + self.H) // 2))
-            elif H < self.H:
-                logger.debug('setting H')
-                result = image.crop(((W - self.W) // 2,
-                                     0,
-                                     (W + self.W) // 2,
-                                     H))
-            else:
-                result = image.crop(((W - self.W) // 2,
-                                     (H - self.H) // 2,
-                                     (W + self.W) // 2,
-                                     (H + self.H) // 2))
+
+            result = image.crop(((W - (self.W if W > self.W else W)) // 2,
+                                 (H - (self.H if H > self.H else H)) // 2,
+                                 (W + (self.W if W > self.W else W)) // 2,
+                                 (H + (self.H if H > self.H else H)) // 2))
+
             result.save(self.dst)
         except (FileNotFoundError, PermissionError, OSError) as e:
             success = False
@@ -47,4 +33,4 @@ class ImageCutter(object):
 
 
 if __name__ == '__main__':
-    ImageCutter().crop(src='./imgs/o6.jpg')
+    ImageCutter().crop(src='./imgs/kanagawa.png')
