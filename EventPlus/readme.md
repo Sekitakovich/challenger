@@ -1,4 +1,4 @@
-[Howto]
+[Simple case]
 
 import EventPlus
 
