@@ -1,13 +1,24 @@
-スレッド間で同期をとるのにthreading.Eventをよく使うが、いつも思うのが「setの際そのイベントに値を設定できたら」。
-仕方なくこれまで「あるタイミングで複数のスレッドに同じ値を通知したい」となった時にはこれとQueueとの
-組み合わせで対処(注1)してきたが、たかだかこれだけの事に大袈裟だし、なんとかならんもんかと思案していた。
+[Howto]
 
-そこで今回一念発起、これを実現するクラスを書いてみた。名付けてEventPlus。インスタンスの生成は不要。
-Eventと同様setとwaitだけで使える。あくまでEventへのカブセモノなのでQueueのように全てのデータを漏らさず
-伝える必要がある場合には向かないが、上記用途(注2)で使えばコードの量を大幅に削減できる。
+import EventPlus
 
-なおdataclassを使っているので3.7以上対応につきあしからず。
+(simplecase)
 
+sender thread: 
+    EventPlus.set(value=1)  # value is any
 
-注1: こういう局面で安直にグローバル変数とかを使うと必ず痛い目にあう
-注2: v1.0ではThreadのみが対象でmultiprocessingでは使えないがいずれ対応予定
+waiter thread:
+    result = EventPlust.wait()
+    print(result.value)
+
+(nextstep)
+
+sender thread:
+    EventPlus.set(value=['How', 'are', 'you?'], sender=100, channel='sample')
+
+waiter thread:
+    result = EventPlust.wait(timeout=5, channel='sample')
+    if result.valid:
+        data = result.value
+    else:
+        print('timeout!')

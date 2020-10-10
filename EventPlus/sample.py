@@ -41,7 +41,7 @@ if __name__ == '__main__':
         def run(self) -> None:
             while True:
                 mail = EventPlus.wait(timeout=self.timeout, channel=self.channel)
-                if mail.timeout is False:
+                if mail.valid is False:
                     logger.info('[%s] %s from [%d] after %f secs' % (self.name, mail.value, mail.setter, mail.passed))
                 else:
                     logger.error('[%s] timeout!' % (self.name))

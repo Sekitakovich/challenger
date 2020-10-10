@@ -17,7 +17,7 @@ class EventPlus(object):
         '''
         received data structure
         '''
-        timeout: bool = False  # if True: value is invalid
+        valid: bool = True  # if False: value is invalid(timeout)
         value: any = None
         setter: int = 0  # from
         passed: float = 0  # waited secs
@@ -81,6 +81,6 @@ class EventPlus(object):
                 mail.value = deepcopy(target.value)
                 mail.setter = target.setter
         else:
-            mail.timeout = True
+            mail.valid = False
 
         return mail
