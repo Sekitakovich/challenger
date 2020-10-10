@@ -1,5 +1,5 @@
 from typing import Dict
-from threading import Thread, Event, Lock
+from threading import Event, Lock
 from dataclasses import dataclass
 from datetime import datetime as dt
 from copy import deepcopy
@@ -75,7 +75,7 @@ class EventPlus(object):
         if target.event.wait(timeout=timeout if timeout else None):
             with cls.__locker:
                 target.event.clear()
-                mail.passed = (dt.now()-target.at).total_seconds()
+                mail.passed = (dt.now() - target.at).total_seconds()
                 mail.value = deepcopy(target.value)
                 mail.setter = target.setter
         else:

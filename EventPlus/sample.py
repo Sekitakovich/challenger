@@ -5,6 +5,9 @@ import random
 from loguru import logger
 
 if __name__ == '__main__':
+    '''
+    test and sample for EventPlus
+    '''
 
     class Setter(Thread):
         def __init__(self, *, name: str, channel: str, number: int):
