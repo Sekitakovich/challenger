@@ -7,7 +7,9 @@ from copy import deepcopy
 
 class EventPlus(object):
     '''
-    threading.Event ++ for Python 3.7 over
+    threading.Event ++
+
+    Ver 1.0 at 2020-10-10 debut
     '''
 
     @dataclass()
