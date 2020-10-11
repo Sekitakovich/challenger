@@ -17,9 +17,9 @@ class EventPlus(object):
         '''
         received data structure
         '''
-        valid: bool = True  # if False: value is invalid(timeout)
+        isValid: bool = True  # if False: value is invalid(timeout)
         value: any = None
-        setter: int = 0  # from
+        setter: str = ''  # from
         passed: float = 0  # waited secs
 
     @dataclass()
@@ -30,7 +30,7 @@ class EventPlus(object):
         at: dt  # refresh datetime
         event: Event
         value: any = None
-        setter: int = 0  # from
+        setter: str = ''  # from
 
     __stock: Dict[str, __Stock] = {}
     __locker = Lock()
@@ -49,7 +49,7 @@ class EventPlus(object):
         return cls.__stock[channel]
 
     @classmethod
-    def set(cls, *, channel: str = __defaultChannelName, value: any, sender: int = 0) -> None:
+    def set(cls, *, channel: str = __defaultChannelName, value: any, sender: str = '') -> None:
         '''
         send data
         :param channel: identifier for channel
@@ -81,6 +81,6 @@ class EventPlus(object):
                 mail.value = deepcopy(target.value)
                 mail.setter = target.setter
         else:
-            mail.valid = False
+            mail.isValid = False
 
         return mail
