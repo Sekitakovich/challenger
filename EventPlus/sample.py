@@ -83,7 +83,7 @@ if __name__ == '__main__':
         DefaultGetter(name='DefaultGetter-2').start()
         OptionGetter(name='OptionGetter-1', channel='CH1', timeout=3).start()
         DefaultSetter(name='DefaultSetter-1').start()
-        OptionSetter(name='DefaultSetter-2', channel='CH1').start()
+        OptionSetter(name='OptoinSetter-1', channel='CH1').start()
         while True:
             time.sleep(10)
 
