@@ -67,7 +67,7 @@ class EventPlus(object):
     @classmethod
     def wait(cls, *, channel: str = __defaultChannelName, timeout: float = 0) -> __Mail:
         '''
-        recieve data
+        receive data
         :param channel: identifier for channel
         :param timeout: secs(same as Event.wait)
         :return: Mail
