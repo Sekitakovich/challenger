@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime as dt
 from queue import Queue
-from typing import Dict
+from typing import Dict, List
 
 
 class QueuePlus(object):
@@ -11,18 +11,15 @@ class QueuePlus(object):
         at: dt
         setter: str = ''
 
+    __id: int = 0
     __defaultChannel = 'default'
-    __Qchannel: Dict[str, Queue] = {__defaultChannel: Queue()}
+    __Qchannel: Dict[str, List[int]] = {__defaultChannel: []}
 
     @classmethod
-    def put(cls, *, channel: str = __defaultChannel, data: any = None, setter: str = ''):
-        item = cls.QueuePack(at=dt.now(), data=data, setter=setter)
+    def get(cls, *, channel: str = __defaultChannel) -> int:
         if channel not in cls.__Qchannel.keys():
-            cls.__Qchannel[channel] = Queue()
-        target = cls.__Qchannel[channel]
-        for k, v in target.items():
-            v.put(data)
+            cls.__Qchannel[channel] = []
+        cls.__id += 1
+        cls.__Qchannel[channel].append(cls.__id)
+        return cls.__id
 
-    @classmethod
-    def get(cls, *, channel: str = __defaultChannel, timeout: int = 0):
-        pass

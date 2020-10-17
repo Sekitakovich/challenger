@@ -70,12 +70,16 @@ if __name__ == '__main__':
         def run(self) -> None:
             logger.info('+++ start [%s] on channel=%s timeout=%f' % (self.name, self.channel, self.timeout))
             while True:
-                mail = EventPlus.wait(channel=self.channel, timeout=self.timeout)
-                if mail.isValid is True:
-                    logger.info(
-                        '[%s] got %s from [%s] at [%s] after %f secs' % (self.name, mail.value, mail.setter, self.channel, mail.passed))
+                try:
+                    mail = EventPlus.wait(channel=self.channel, timeout=self.timeout, raiseme=True)
+                except (TimeoutError) as e:
+                    logger.error(e)
                 else:
-                    logger.error('[%s] timeout!' % (self.name))
+                    if mail.isValid is True:
+                        logger.info(
+                            '[%s] got %s from [%s] at [%s] after %f secs' % (self.name, mail.value, mail.setter, self.channel, mail.passed))
+                    else:
+                        logger.error('[%s] timeout!' % (self.name))
 
 
     def main():

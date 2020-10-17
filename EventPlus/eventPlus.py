@@ -65,11 +65,12 @@ class EventPlus(object):
             target.event.set()
 
     @classmethod
-    def wait(cls, *, channel: str = __defaultChannelName, timeout: float = 0) -> __Mail:
+    def wait(cls, *, channel: str = __defaultChannelName, timeout: float = 0, raiseme: bool = False) -> __Mail:
         '''
         receive data
         :param channel: identifier for channel
         :param timeout: secs(same as Event.wait)
+        :param raiseme: if True raise TimeoutError on timeout
         :return: Mail
         '''
         target = cls.__getChannel(channel=channel)
@@ -82,5 +83,7 @@ class EventPlus(object):
                 mail.setter = target.setter
         else:
             mail.isValid = False
+            if raiseme:
+                raise TimeoutError('Timeout has occured')
 
         return mail
