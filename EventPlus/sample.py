@@ -40,7 +40,7 @@ if __name__ == '__main__':
             for counter in range(1000):
                 random.shuffle(self.value)
                 logger.debug('[%s] set value %s to [%s]' % (self.name, self.value, self.channel))
-                EventPlus.set(value=self.value, channel=self.channel)
+                EventPlus.set(value=self.value, channel=self.channel, setter=self.name)
                 time.sleep(random.randint(1, 3))
 
     class DefaultGetter(Thread):
@@ -60,7 +60,7 @@ if __name__ == '__main__':
                     logger.error('[%s] timeout!' % (self.name))
 
     class OptionGetter(Thread):
-        def __init__(self, *, name: str, timeout: int, channel: str):
+        def __init__(self, *, name: str, timeout: float, channel: str):
             super().__init__()
             self.daemon = True
             self.name = name
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     def main():
         DefaultGetter(name='DefaultGetter-1').start()
         DefaultGetter(name='DefaultGetter-2').start()
-        OptionGetter(name='OptionGetter-1', channel='CH1', timeout=3).start()
+        OptionGetter(name='OptionGetter-1', channel='CH1', timeout=2.5).start()
         DefaultSetter(name='DefaultSetter-1').start()
         OptionSetter(name='OptoinSetter-1', channel='CH1').start()
         while True:
