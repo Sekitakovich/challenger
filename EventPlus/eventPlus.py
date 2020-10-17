@@ -50,18 +50,18 @@ class EventPlus(object):
         return cls.__stock[channel]
 
     @classmethod
-    def set(cls, *, channel: str = __defaultChannelName, value: any, sender: str = __defaultSetter) -> None:
+    def set(cls, *, channel: str = __defaultChannelName, value: any, setter: str = __defaultSetter) -> None:
         '''
         send data
         :param channel: identifier for channel
         :param value: aby! any! any!
-        :param sender: from
+        :param setter: from
         :return: none
         '''
         target = cls.__takeChannel(channel=channel)
         with cls.__locker:
             target.value = value
-            target.setter = sender
+            target.setter = setter
             target.at = dt.now()
             target.event.set()
 
