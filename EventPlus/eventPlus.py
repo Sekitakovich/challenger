@@ -84,6 +84,6 @@ class EventPlus(object):
         else:
             mail.isValid = False
             if raiseme:
-                raise TimeoutError('Timeout has occured')
+                raise TimeoutError('Timeout has occured at channel[%s]' % (channel))
 
         return mail
