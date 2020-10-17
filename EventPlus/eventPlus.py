@@ -35,9 +35,10 @@ class EventPlus(object):
     __stock: Dict[str, __Stock] = {}
     __locker = Lock()
     __defaultChannelName = 'default'
+    __defaultSetter = 'default'
 
     @classmethod
-    def __getChannel(cls, *, channel: str) -> __Stock:
+    def __takeChannel(cls, *, channel: str) -> __Stock:
         '''
         select target channel
         :param channel: identifier for channel
@@ -49,7 +50,7 @@ class EventPlus(object):
         return cls.__stock[channel]
 
     @classmethod
-    def set(cls, *, channel: str = __defaultChannelName, value: any, sender: str = '') -> None:
+    def set(cls, *, channel: str = __defaultChannelName, value: any, sender: str = __defaultSetter) -> None:
         '''
         send data
         :param channel: identifier for channel
@@ -57,7 +58,7 @@ class EventPlus(object):
         :param sender: from
         :return: none
         '''
-        target = cls.__getChannel(channel=channel)
+        target = cls.__takeChannel(channel=channel)
         with cls.__locker:
             target.value = value
             target.setter = sender
@@ -73,7 +74,7 @@ class EventPlus(object):
         :param raiseme: if True raise TimeoutError on timeout
         :return: Mail
         '''
-        target = cls.__getChannel(channel=channel)
+        target = cls.__takeChannel(channel=channel)
         mail = cls.__Mail()
         if target.event.wait(timeout=timeout if timeout else None):
             with cls.__locker:
