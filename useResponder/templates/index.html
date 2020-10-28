@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{title}}</title>
+    <script type="text/javascript" src="../static/jquery-3.5.1.min.js"></script>
+    <script type="text/javascript" src="../static/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="../static/jquery-ui.min.css">
+    <style>
+        iframe {
+            width: 80%;
+        }
+        .tabpage {
+            width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+<div id="tabs">
+<ul>
+    <li><a href="#Top">Top</a></li>
+    <li><a href="#PianoMan">PianoMan</a></li>
+    <li><a href="#admin">Admin</a></li>
+</ul>
+<div class="tabpage" id="Top">Top</div>
+<div class="tabpage" id="PianoMan">
+    <iframe src="PianoMan"></iframe>
+</div>
+<div class="tabpage" id="admin">
+    <iframe src="admin"></iframe>
+</div>
+</div>
+<script type="text/javascript">
+    jQuery(document).ready(function(){
+        console.log('Start');
+        var tabs = jQuery('#tabs');
+        tabs.tabs();
+    });
+</script>
+</body>
+</html>

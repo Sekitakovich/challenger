@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PianoMan</title>
+</head>
+<body>
+<form id="main">
+    <select id="jukeBox">
+        <option value="">Please request</option>
+{% for file in mp3 %}
+        <option value="{{file}}">Please request</option>
+{% endfor %}
+    </select>
+</form>
+</body>
+</html>

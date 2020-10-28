@@ -1,6 +1,5 @@
 from typing import Dict
 from threading import Event, Lock
-from dataclasses import dataclass
 from datetime import datetime as dt
 from copy import deepcopy
 
@@ -10,27 +9,28 @@ class EventPlus(object):
     threading.Event ++
 
     Ver 1.0 at 2020-10-10 debut
+    ver 1.1 at 2020-10-28 not use dataclass for Python version < 3.7 (3.6?)
     '''
 
-    @dataclass()
     class __Mail(object):
         '''
         received data structure
         '''
-        isValid: bool = True  # if False: value is invalid(timeout)
-        value: any = None
-        setter: str = ''  # from
-        passed: float = 0  # waited secs
+        def __init__(self):
+            self.inTime = True  # if False: value is invalid(timeout)
+            self.value = None
+            self.sette = ''  # from
+            self.passed = 0  # waited secs
 
-    @dataclass()
     class __Stock(object):
         '''
         inner storage
         '''
-        at: dt  # refresh datetime
-        event: Event
-        value: any = None
-        setter: str = ''  # from
+        def __init__(self, *, event: Event, at: dt):
+            self.at = at # refresh datetime
+            self.event = event
+            self.value = None
+            self.setter = ''  # from
 
     __stock: Dict[str, __Stock] = {}
     __locker = Lock()
@@ -83,8 +83,8 @@ class EventPlus(object):
                 mail.value = deepcopy(target.value)
                 mail.setter = target.setter
         else:
-            mail.isValid = False
+            mail.inTime = False
             if raiseme:
-                raise TimeoutError('Timeout(%f secs) has occured at channel[%s]' % (timeout, channel))
+                raise TimeoutError('Timeout(%.3f secs) has occured at channel[%s]' % (timeout, channel))
 
         return mail
