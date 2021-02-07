@@ -21,6 +21,7 @@ class Card(object):
     name: str
     hcp: int
 
+
 class CBox(object):
     def __init__(self):
         self.card = []  # 52枚のカード(Joker不要!)
@@ -28,22 +29,23 @@ class CBox(object):
         self.name = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2']
         self.numbers = [13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
         self.indexs = [n for n in range(52)]
-        self.marks = ['♠','♡','♢','♣']
+        self.marks = ['♠', '♡', '♢', '♣']
         self.hcps = [4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         for a in range(4):
             for b in range(13):
-                self.card.append(Card(suit=self.suit[a], name=self.name[b], mark=self.marks[a], number=self.numbers[b], hcp=self.hcps[b]))
+                self.card.append(Card(suit=self.suit[a], name=self.name[b], mark=self.marks[a], number=self.numbers[b],
+                                      hcp=self.hcps[b]))
 
-    def hand(self) -> List[Card]:
-        result = [self.card[c] for c in sorted(random.sample(self.indexs, 13))]
+    def hand(self, *, top: int) -> List[Card]:
+        result = [self.card[c] for c in sorted(random.sample(self.indexs, top * 13))]
         return result
 
 
 if __name__ == '__main__':
     def main():
         cbox = CBox()
-        hand = cbox.hand()
+        hand = cbox.hand(top=1)
 
         HCP = 0
         many = {
@@ -52,11 +54,12 @@ if __name__ == '__main__':
             Suits.D: 0,
             Suits.C: 0,
         }
+        figure = [f'{h.mark}{h.name}' for h in hand]
         for h in hand:
-            logger.info(f'{h.mark}{h.name}')
             HCP += h.hcp
             many[h.suit] += 1
         pass
+        logger.info(' '.join(figure))
         logger.debug(f'HCP = {HCP}')
         logger.debug(many)
 
