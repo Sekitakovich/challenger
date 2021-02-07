@@ -57,7 +57,7 @@ if __name__ == '__main__':
                 mail = EventPlus.wait()
                 if mail.inTime is True:
                     logger.info(
-                        '[%s] got %s after %f secs' % (self.name, mail.value, mail.passed))
+                        '[%s] got %s after %f secs' % (self.name, mail.number, mail.passed))
                 else:
                     logger.error('[%s] timeout!' % (self.name))
 
@@ -80,7 +80,7 @@ if __name__ == '__main__':
                 else:
                     logger.info(
                         '[%s] got %s from [%s] at [%s] after %f secs' % (
-                        self.name, mail.value, mail.setter, self.channel, mail.passed))
+                            self.name, mail.number, mail.setter, self.channel, mail.passed))
 
 
     def main():

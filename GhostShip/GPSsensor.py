@@ -12,6 +12,7 @@ $GPGLL,3421.7686,N,13222.3345,E,073132,A,A*49
 $GPZDA,082220.00,09,01,2006,00,00*60
 '''
 
+
 @dataclass()
 class LatLng(object):
     lat: float = 0.0
@@ -20,7 +21,6 @@ class LatLng(object):
 
 class GhostShip(object):
     def __init__(self, *, lat: float = 35.554315, lng: float = 139.421254, spd: float = 20, hdg: int = 0):
-
         self.location = LatLng(lat=self.GoogleMaptoGPS(val=lat), lng=self.GoogleMaptoGPS(val=lng))
         self.spd = spd  # kmH
         self.hdg = hdg  # 0 < 360
@@ -48,7 +48,7 @@ class GhostShip(object):
         self.dgps = 777
         self.statS = 'D'
 
-        self.debug = False
+        self.debug = True
 
     def GoogleMaptoGPS(self, *, val: float) -> float:  # GoogleMaps -> GPGGA
 
@@ -115,7 +115,7 @@ class GhostShip(object):
         lng = self.location.lng + math.cos(head) * d
 
         if self.debug:
-            logger.debug('moved %f %f:%f -> %s' % (d, lat, lng, self.location))
+            logger.debug(f'moved {d:.4f} {lat:.4f}:{lng:.4f} -> {self.location}')
 
         self.location.lat = lat
         self.location.lng = lng
@@ -140,5 +140,6 @@ if __name__ == '__main__':
             for nmea in ooo:
                 print(nmea)
             print()
+
 
     main()
