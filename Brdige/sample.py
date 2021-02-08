@@ -49,7 +49,7 @@ class CBox(object):
         self.suit = [Suits.S, Suits.H, Suits.D, Suits.C]
         self.seat = ['S', 'W', 'N', 'E']
         self.name = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2']
-        self.marks = ['♠', '♡', '♢', '♣']
+        self.marks = ['♠', '♥', '♦', '♣']
         self.hcps = [4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         # self.fcps = [13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
 
@@ -85,12 +85,29 @@ class CBox(object):
 
 
 if __name__ == '__main__':
+
+    def cont(*, card: List[Card]):
+        series = 0
+        for c in range(len(card) - 1):
+            if card[c].suit == card[c + 1].suit:
+                # logger.info(f'checking {c}')
+                if card[c].index == card[c + 1].index - 1:
+                    series += 1
+                else:
+                    if series:
+                        logger.debug(f'{card[c].mark}{card[c].name} = {series}')
+                    series = 0
+            else:
+                series = 0
+
+
     def main():
         cbox = CBox()
         deal = cbox.deal()
 
         for seat, m in enumerate(deal):
             # card = ' '.join([colored(f'{c.mark}{c.name}','red') for c in m.card])
+            cont(card=m.card)
             name = []
             for card in m.card:
                 text = f'{card.mark}{card.name}'
