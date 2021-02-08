@@ -1,7 +1,8 @@
+import random
 from dataclasses import dataclass
 from enum import IntEnum
-import random
 from typing import List
+
 from loguru import logger
 from termcolor import colored
 
