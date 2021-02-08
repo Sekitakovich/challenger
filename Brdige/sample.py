@@ -20,7 +20,7 @@ class Suits(IntEnum):
     C = 4
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True)  # read only
 class Card(object):
     suit: Suits  # S:H:D:C
     mark: str  # '♠♡♢♣'
@@ -43,6 +43,7 @@ class CBox(object):
         self.indexs = [n for n in range(52)]
         self.card = []  # 52 cards (without JK)
         self.suit = [Suits.S, Suits.H, Suits.D, Suits.C]
+        self.seat = ['S', 'W', 'N', 'E']
         self.name = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2']
         self.marks = ['♠', '♡', '♢', '♣']
         self.hcps = [4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -61,10 +62,6 @@ class CBox(object):
                     index=index,
                 ))
                 index += 1
-
-    # def hand(self, *, top: int) -> List[Card]:
-    #     result = [self.card[c] for c in sorted(random.sample(self.indexs, top * 13))]
-    #     return result
 
     def deal(self) -> List[Hand]:
         result = []
@@ -86,8 +83,9 @@ if __name__ == '__main__':
         cbox = CBox()
         deal = cbox.deal()
 
-        for m in deal:
+        for seat, m in enumerate(deal):
             card = ' '.join([f'{c.mark}{c.name}' for c in m.card])
-            logger.info(f'HCP={m.hcp:02d} card=[{card}]')
+            logger.info(f'[{cbox.seat[seat]}] HCP={m.hcp:02d} card=[{card}]')
+
 
     main()
