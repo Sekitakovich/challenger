@@ -86,24 +86,8 @@ if __name__ == '__main__':
         cbox = CBox()
         deal = cbox.deal()
 
-        # print(deal)
-        # HCP = 0
-        # FCP = 0
-        # many = {
-        #     Suits.S: 0,
-        #     Suits.H: 0,
-        #     Suits.D: 0,
-        #     Suits.C: 0,
-        # }
-        # figure = [f'{h.mark}{h.name}' for h in hand]
-        # for h in hand:
-        #     HCP += h.hcp
-        #     FCP += h.fcp
-        #     many[h.suit] += 1
-        # pass
-        # logger.info(' '.join(figure))
-        # logger.debug(f'HCP = {HCP} FCP = {FCP}')
-        # logger.debug(many)
-
+        for m in deal:
+            card = ' '.join([f'{c.mark}{c.name}' for c in m.card])
+            logger.info(f'HCP={m.hcp:02d} card=[{card}]')
 
     main()
