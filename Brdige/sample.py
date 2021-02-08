@@ -3,6 +3,7 @@ from enum import IntEnum
 import random
 from typing import List
 from loguru import logger
+from termcolor import colored
 
 
 class Seat(IntEnum):
@@ -29,13 +30,15 @@ class Card(object):
     # fcp: int  # full card point (no need?)
     honor: bool  # HCP members + 10
     index: int
+    color: str  # for termcolor
+    attr: str
 
 
 @dataclass()
 class Hand(object):
     card: List[Card]
     hcp: int = 0
-    fcp: int = 0
+    # fcp: int = 0
 
 
 class CBox(object):
@@ -60,6 +63,8 @@ class CBox(object):
                     # fcp=self.fcps[b],
                     honor=bool(b < 5),
                     index=index,
+                    color='red' if self.suit[a] in (Suits.H, Suits.D) else 'grey',
+                    attr='bold' if self.suit[a] in (Suits.S, Suits.H) else 'dark',
                 ))
                 index += 1
 
@@ -84,8 +89,16 @@ if __name__ == '__main__':
         deal = cbox.deal()
 
         for seat, m in enumerate(deal):
-            card = ' '.join([f'{c.mark}{c.name}' for c in m.card])
-            logger.info(f'[{cbox.seat[seat]}] HCP={m.hcp:02d} card=[{card}]')
+            # card = ' '.join([colored(f'{c.mark}{c.name}','red') for c in m.card])
+            name = []
+            for card in m.card:
+                text = f'{card.mark}{card.name}'
+                color = f'{card.color}'
+                attr = f'{card.attr}'
+                view = colored(text, color, attrs=[f'{attr}'])
+                name.append(view)
+            golgo = ' '.join(name)
+            logger.info(f'[{cbox.seat[seat]}] HCP={m.hcp:02d} card=[{golgo}]')
 
 
     main()
