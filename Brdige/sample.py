@@ -69,8 +69,8 @@ class CBox(object):
         self.suit = [Suits.S, Suits.H, Suits.D, Suits.C]
         self.seat = ['S', 'W', 'N', 'E']
         self.name = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2']
-        # self.marks = ['♠', '♥', '♦', '♣']
-        self.marks = ['S', 'H', 'D', 'C']
+        self.marks = ['♠', '♥', '♦', '♣']
+        # self.marks = ['S', 'H', 'D', 'C']
         self.hcps = [4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         # self.fcps = [13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
         self.SQUARE = 4
@@ -112,10 +112,9 @@ if __name__ == '__main__':
     def series(*, card: List[Card]) -> int:
         result = 0
         cont = 0
-        for c in range(len(card) - 1):
-            if card[c].suit == card[c + 1].suit:
-                # logger.info(f'checking {c}')
-                if card[c].index == card[c + 1].index - 1:
+        for c in range(13):
+            if c < 12:
+                if card[c].suit == card[c + 1].suit and card[c].index == card[c + 1].index - 1:
                     cont += 1
                     result += 1
                 else:
@@ -123,8 +122,11 @@ if __name__ == '__main__':
                         logger.debug(f'{card[c].mark}{card[c].name} = {cont}')
                     cont = 0
             else:
-                cont = 0
+                if cont:
+                    logger.debug(f'{card[c].mark}{card[c].name} = {cont} (final)')
+
         return result
+
 
     def main():
         cbox = CBox()
