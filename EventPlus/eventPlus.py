@@ -19,7 +19,7 @@ class EventPlus(object):
         def __init__(self):
             self.inTime = True  # if False: value is invalid(timeout)
             self.value = None
-            self.sette = ''  # from
+            self.setter = ''  # from
             self.passed = 0  # waited secs
 
     class __Stock(object):
