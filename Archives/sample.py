@@ -26,24 +26,28 @@ class Archiver(object):
                 pass
         return file
 
-    def toc(self, *, reverse: bool = False) -> Dict[str, any]:  # return List['YYYY-MM-DD']
+    def toc(self, *, reverse: bool = False) -> Dict[str, any]:  # return dict
         result = {}
         for sfi in self.equipment():
             result[sfi] = {}
             basepath = self.path / sfi
             flat = natsorted(self.tree(path=basepath, file=[]), reverse=reverse)
 
-            ooo = {}
+            files = {}
             for f in flat:
-                YYYY = int(f[0:4])
-                MM = int(f[4:6])
-                DD = int(f[6:8])
-                if YYYY not in ooo.keys():
-                    ooo[YYYY] = {}
-                if MM not in ooo[YYYY].keys():
-                    ooo[YYYY][MM] = []
-                ooo[YYYY][MM].append(DD)
-            result[sfi] = ooo
+                try:
+                    YYYY = int(f[0:4])
+                    MM = int(f[4:6])
+                    DD = int(f[6:8])
+                except (ValueError, IndexError, KeyError) as e:
+                    logger.error(e)
+                else:
+                    if YYYY not in files.keys():
+                        files[YYYY] = {}
+                    if MM not in files[YYYY].keys():
+                        files[YYYY][MM] = []
+                    files[YYYY][MM].append(DD)
+            result[sfi] = files
 
         return result
 
@@ -61,7 +65,7 @@ class Archiver(object):
                 for row in body.split('\n'):
                     if row:
                         result.append(row)
-        except (FileNotFoundError, IndexError, KeyError) as e:
+        except (FileNotFoundError, IndexError, KeyError, ValueError) as e:
             logger.error(e)
 
         return result
