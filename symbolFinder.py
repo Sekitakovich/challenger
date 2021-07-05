@@ -3,8 +3,9 @@ from loguru import logger
 
 class SymbolFinder(object):
     '''
-    バイナリストリーム受信の度にパターンマッチングをするためのクラス
+    ストリーム受信の度にパターンマッチングをするためのクラス
     '''
+
     def __init__(self, *, pattern: bytes) -> None:  # 期待するパターンをbytesでセットする
         self.pattern = [int(c) for c in pattern]
         self.length = len(pattern)
@@ -20,21 +21,21 @@ class SymbolFinder(object):
         '''
         found = False
         correct = self.pattern[self.position]
+        good = (inchar == correct)
 
         logger.debug(
-            f'[{self.counter:06d}] checking 0x{inchar:02X}({chr(inchar)}) with 0x{correct:02X} at position[{self.position}]')
+            f'[{self.counter:06d}:{self.position}] checking 0x{inchar:02X}({chr(inchar)}) with 0x{correct:02X} - {good}')
 
-        if inchar == correct:
+        if good:
             self.position += 1
             if self.position == self.length:
                 found = True
                 self.position = 0  # Initialize checkpoint
-                logger.success(f'Found!')
+                logger.debug(f'Completed!')
             else:
-                pass  # to be continued
+                pass  # to be continue
         else:
             self.position = 0  # Reset checkpoint
-            logger.warning(f'failed')
 
         self.counter += 1
         return found
