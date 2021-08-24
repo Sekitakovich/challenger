@@ -24,6 +24,7 @@ class SFTPSession(object):  # use only key authentication, no need password
         self.localPath = pathlib.Path(localPath)
         self.pattern = pattern
         self.overwrite = overwrite
+        self.newCommer = []
 
         try:
             self.pkey = paramiko.RSAKey.from_private_key_file(filename=keyFile)
@@ -49,6 +50,7 @@ class SFTPSession(object):  # use only key authentication, no need password
                     ssh.connect(hostname=self.hostname, port=self.port, username=self.username, pkey=self.pkey, timeout=self.timeoutSecs)
                     logger.debug(f'+++ connected')
                     with ssh.open_sftp() as sftp:
+                        self.newCommer = []
                         sftp.chdir(path=str(self.basePath))
                         # cwd = sftp.getcwd()
                         # logger.debug(f'remote cwd = {cwd}')
@@ -59,6 +61,7 @@ class SFTPSession(object):  # use only key authentication, no need password
                                 if target.exists() is False or self.overwrite is True:
                                     dst = str(target)
                                     sftp.get(remotepath=src, localpath=dst, callback=self.cbEntry)
+                                    self.newCommer.append(src)
                                     logger.debug(f'+++ GET [{self.basePath / src}] to [{dst}]')
                                 else:
                                     logger.warning(f'=== {target} is already exists')
@@ -84,7 +87,8 @@ if __name__ == '__main__':
         S = SFTPSession(name='INFOX', hostname='jmf.magneticsquare.biz', username='ubuntu', keyFile=keyFile,
                         remotePath='temp', port=22,
                         localPath='./LOGs', pattern='????????.data', overwrite=True)
-        S.get()
+        if S.get():
+            logger.info(S.newCommer)
 
 
     main()
