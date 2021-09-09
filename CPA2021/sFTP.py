@@ -81,7 +81,7 @@ class SFTPSession(object):  # use only key authentication, no need password
                     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                     ssh.connect(hostname=self.hostname, port=self.port, username=self.username, pkey=self.pkey,
                                 timeout=self.timeoutSecs)
-                    logger.debug(f'({self.sessionName}) connected')
+                    logger.info(f'({self.sessionName}) connected')
                     with ssh.open_sftp() as sftp:
                         self.newCommer = []
                         sftp.chdir(path=str(self.basePath))
@@ -109,7 +109,7 @@ class SFTPSession(object):  # use only key authentication, no need password
                 logger.error(e)
             else:
                 success = True
-                logger.debug(f'({self.sessionName}) fin')
+                logger.info(f'({self.sessionName}) fin')
         return success
 
     def __del__(self):
@@ -122,7 +122,7 @@ if __name__ == '__main__':
         keyFile = './PEMs/LightsailDefaultKey-ap-northeast-1.pem'
         S = SFTPSession(sessionName='INFOX', hostname='jmf.magneticsquare.biz', username='ubuntu', keyFile=keyFile,
                         remotePath='temp', port=22,
-                        localPath='./Files/INFOX', pattern='????????.data', overwrite=True, cleanUp=False)
+                        localPath='./Files/INFOX', pattern='????????.data', overwrite=False, cleanUp=False)
         if S.retrieve():
             logger.info(S.newCommer)
 
