@@ -6,16 +6,28 @@ import paramiko
 import fnmatch
 import pathlib
 import socket
+from dataclasses import dataclass
 from loguru import logger
+
+
+@dataclass()
+class Server(object):
+    host: str  # サーバホスト名
+    code: str  # お客様コード
+    selfClean: bool  # Trueなら取得後にファイルを消去
+    remoteBase: str  # サーバ側のルートフォルダ
+    localBase: str  # こちら側のルートフォルダ
+    prefix: str # こちらで予め指定するファイル接頭文字列
 
 
 class SFTPSession(object):  # use only key authentication, no need password
     def __init__(self, *, hostname: str, port: int = 22, username: str, keyFile: str, remotePath: str = './',
-                 localPath: str = './', pattern: str = '*.*', overwrite: bool = True, name: str = 'unknown'):
+                 localPath: str = './', pattern: str = '*.*', overwrite: bool = True, cleanUp: bool = True,
+                 sessionName: str = 'unknown'):
         self.isReady = False
         self.timeoutSecs = 5
 
-        self.name = name
+        self.sessionName = sessionName
         self.hostname = hostname
         self.port = port
         self.username = username
@@ -24,6 +36,7 @@ class SFTPSession(object):  # use only key authentication, no need password
         self.localPath = pathlib.Path(localPath)
         self.pattern = pattern
         self.overwrite = overwrite
+        self.cleanUp = cleanUp
         self.newCommer = []
 
         try:
@@ -32,7 +45,7 @@ class SFTPSession(object):  # use only key authentication, no need password
             logger.error(e)
         else:
             self.isReady = True
-            logger.debug(f'+++ SFTP instance [{self.name}] was made as bellows')
+            logger.debug(f'+++ SFTP instance [{self.sessionName}] was made as bellows')
             logger.debug(f'+++ sftp -i {keyFile} -p {self.port} {self.account}')
             logger.debug(f'+++ remotePath = [{self.basePath}] localPath = [{self.localPath}]')
 
@@ -47,7 +60,8 @@ class SFTPSession(object):  # use only key authentication, no need password
                 logger.debug(f'+++ start SSH session')
                 with paramiko.SSHClient() as ssh:
                     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                    ssh.connect(hostname=self.hostname, port=self.port, username=self.username, pkey=self.pkey, timeout=self.timeoutSecs)
+                    ssh.connect(hostname=self.hostname, port=self.port, username=self.username, pkey=self.pkey,
+                                timeout=self.timeoutSecs)
                     logger.debug(f'+++ connected')
                     with ssh.open_sftp() as sftp:
                         self.newCommer = []
@@ -63,6 +77,9 @@ class SFTPSession(object):  # use only key authentication, no need password
                                     sftp.get(remotepath=src, localpath=dst, callback=self.cbEntry)
                                     self.newCommer.append(src)
                                     logger.debug(f'+++ GET [{self.basePath / src}] to [{dst}]')
+                                    if self.cleanUp:
+                                        sftp.remove(path=src)
+                                        logger.debug(f'--- {src} was removed')
                                 else:
                                     logger.warning(f'=== {target} is already exists')
                             else:
@@ -84,9 +101,9 @@ class SFTPSession(object):  # use only key authentication, no need password
 if __name__ == '__main__':
     def main():
         keyFile = './PEMs/LightsailDefaultKey-ap-northeast-1.pem'
-        S = SFTPSession(name='INFOX', hostname='jmf.magneticsquare.biz', username='ubuntu', keyFile=keyFile,
+        S = SFTPSession(sessionName='INFOX', hostname='jmf.magneticsquare.biz', username='ubuntu', keyFile=keyFile,
                         remotePath='temp', port=22,
-                        localPath='./LOGs', pattern='????????.data', overwrite=True)
+                        localPath='./INFOX', pattern='????????.data', overwrite=True, cleanUp=False)
         if S.get():
             logger.info(S.newCommer)
 
