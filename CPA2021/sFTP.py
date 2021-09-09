@@ -7,7 +7,7 @@ import fnmatch
 import pathlib
 import socket
 from dataclasses import dataclass
-from loguru import logger
+from logzero import logger
 
 
 @dataclass()
@@ -17,7 +17,7 @@ class Server(object):
     selfClean: bool  # Trueなら取得後にファイルを消去
     remoteBase: str  # サーバ側のルートフォルダ
     localBase: str  # こちら側のルートフォルダ
-    prefix: str # こちらで予め指定するファイル接頭文字列
+    prefix: str  # こちらで予め指定するファイル接頭文字列
 
 
 class SFTPSession(object):  # use only key authentication, no need password
@@ -53,7 +53,7 @@ class SFTPSession(object):  # use only key authentication, no need password
         if sA != sW:
             logger.warning(f'Accepted/Written not match [{sA}/{sW}] ???')
 
-    def get(self) -> bool:
+    def retrieve(self) -> bool:
         success = False
         if self.isReady:
             try:
@@ -83,7 +83,7 @@ class SFTPSession(object):  # use only key authentication, no need password
                                 else:
                                     logger.warning(f'=== {target} is already exists')
                             else:
-                                logger.warning(f'--- {src}')
+                                logger.warning(f'--- ignore [{src}]')
             except (socket.gaierror, socket.timeout,
                     PermissionError, FileNotFoundError, paramiko.AuthenticationException,
                     paramiko.BadAuthenticationType) as e:
@@ -103,8 +103,8 @@ if __name__ == '__main__':
         keyFile = './PEMs/LightsailDefaultKey-ap-northeast-1.pem'
         S = SFTPSession(sessionName='INFOX', hostname='jmf.magneticsquare.biz', username='ubuntu', keyFile=keyFile,
                         remotePath='temp', port=22,
-                        localPath='./INFOX', pattern='????????.data', overwrite=True, cleanUp=False)
-        if S.get():
+                        localPath='./Files/INFOX', pattern='????????.data', overwrite=True, cleanUp=False)
+        if S.retrieve():
             logger.info(S.newCommer)
 
 

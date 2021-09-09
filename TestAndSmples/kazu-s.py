@@ -36,7 +36,7 @@ def search_index(keyword):
             else:
                 title = article.find("div", "BNeawe vvjwJb AP7Wnd").getText()
             # url
-            url = (article.n.get("href").replace('/url?q=', '').split('&'))[0]
+            url = (article.n.retrieve("href").replace('/url?q=', '').split('&'))[0]
             if url is None:
                 continue
 
