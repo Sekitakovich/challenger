@@ -7,12 +7,27 @@ import fnmatch
 import pathlib
 import socket
 from dataclasses import dataclass
+from common import Constants
+
+import logging
+import logzero
 from logzero import logger
+
+formatS = '%(color)s[%(levelname)1.1s %(asctime)s %(module)s:%(lineno)d:%(funcName)s]%(end_color)s %(message)s'
+formatF = '%(name)s - %(asctime)-15s - %(levelname)s:: %(message)s'
+
+logzero.loglevel(level=logging.DEBUG)
+formatter = logzero.LogFormatter(fmt=formatS, datefmt='%H:%M:%S')
+logzero.setup_default_logger(formatter=formatter)
+
+logzero.logfile(filename='./LOGs/cpa.log', loglevel=logging.INFO, backupCount=60)
 
 
 @dataclass()
 class Server(object):
     host: str  # サーバホスト名
+    port: int  # ポート番号
+    user: str  # SSHアカウント
     code: str  # お客様コード
     selfClean: bool  # Trueなら取得後にファイルを消去
     remoteBase: str  # サーバ側のルートフォルダ
@@ -39,6 +54,10 @@ class SFTPSession(object):  # use only key authentication, no need password
         self.cleanUp = cleanUp
         self.newCommer = []
 
+        logger.info(f'--------------------------------')
+        logger.info(f'start {Constants.sysName} version {Constants.sysVersion}')
+        logger.info(f'--------------------------------')
+
         try:
             self.pkey = paramiko.RSAKey.from_private_key_file(filename=keyFile)
         except (FileNotFoundError, paramiko.BadHostKeyException, paramiko.SSHException, UnicodeDecodeError) as e:
@@ -62,7 +81,7 @@ class SFTPSession(object):  # use only key authentication, no need password
                     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                     ssh.connect(hostname=self.hostname, port=self.port, username=self.username, pkey=self.pkey,
                                 timeout=self.timeoutSecs)
-                    logger.debug(f'+++ connected')
+                    logger.debug(f'({self.sessionName}) connected')
                     with ssh.open_sftp() as sftp:
                         self.newCommer = []
                         sftp.chdir(path=str(self.basePath))
@@ -76,21 +95,21 @@ class SFTPSession(object):  # use only key authentication, no need password
                                     dst = str(target)
                                     sftp.get(remotepath=src, localpath=dst, callback=self.cbEntry)
                                     self.newCommer.append(src)
-                                    logger.debug(f'+++ GET [{self.basePath / src}] to [{dst}]')
+                                    logger.debug(f'({self.sessionName}) +++ GET [{self.basePath / src}] to [{dst}]')
                                     if self.cleanUp:
                                         sftp.remove(path=src)
-                                        logger.debug(f'--- {src} was removed')
+                                        logger.debug(f'({self.sessionName}) --- {src} was removed')
                                 else:
-                                    logger.warning(f'=== {target} is already exists')
+                                    logger.warning(f'({self.sessionName}) === {target} is already exists')
                             else:
-                                logger.warning(f'--- ignore [{src}]')
+                                logger.warning(f'({self.sessionName}) ignore [{src}]')
             except (socket.gaierror, socket.timeout,
                     PermissionError, FileNotFoundError, paramiko.AuthenticationException,
                     paramiko.BadAuthenticationType) as e:
                 logger.error(e)
             else:
                 success = True
-                logger.debug(f'+++ fin')
+                logger.debug(f'({self.sessionName}) fin')
         return success
 
     def __del__(self):
