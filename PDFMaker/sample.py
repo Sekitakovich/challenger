@@ -36,7 +36,7 @@ class PDFMaker(object):
                 success = False
                 logger.error(e)
             else:
-                logger.success('%s was created' % (dst))
+                logger.success('%s was created' % (≤dst))
         else:
             success = False
         return success

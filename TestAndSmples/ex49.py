@@ -40,9 +40,11 @@ class EX49(object):
 
 if __name__ == '__main__':
 
-    ex49 = EX49()
+    def main():
+        ex49 = EX49()
 
-    for v in range(1000):
-        e = ex49.encode(src=v)
-        d = ex49.decode(src=e)
-        print('Encode:Decode(status) %d -> %d -> %d = %s' % (v, e, d, (v == d)))
+        for v in range(1000):
+            e = ex49.encode(src=v)
+            d = ex49.decode(src=e)
+            print('Encode:Decode(status) %d -> %d -> %d = %s' % (v, e, d, (v == d)))
+
